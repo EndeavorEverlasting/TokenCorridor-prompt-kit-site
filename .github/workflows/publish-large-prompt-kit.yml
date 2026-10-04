@@ -1,0 +1,60 @@
+name: One-shot canonical Prompt Kit publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".publish/index.part-*"
+      - ".github/workflows/publish-large-prompt-kit.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reconstruct and verify canonical artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .publish/index.part-* > index.html.new
+          actual="$(git hash-object index.html.new)"
+          expected="650c5ba2830e45fde8cbf2348088017e4d496d2b"
+          echo "actual=$actual"
+          echo "expected=$expected"
+          test "$actual" = "$expected"
+          mv index.html.new index.html
+      - name: Stamp source revision and remove staging transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path("README.md")
+          text = path.read_text(encoding="utf-8")
+          line = "Source revision: `e578e03b47b3394981e54f04d2ad7cb098adfad0`"
+          pattern = r"Source revision: `[^`]+`"
+          if re.search(pattern, text):
+              text = re.sub(pattern, lambda _: line, text)
+          else:
+              text = text.rstrip() + "\n\n" + line + "\n"
+          path.write_text(text, encoding="utf-8")
+          PY
+          git rm -r .publish
+          git rm .github/workflows/publish-large-prompt-kit.yml
+          git add index.html README.md
+      - name: Commit verified projection
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git diff --cached --check
+          git commit -m "Publish verified Prompt Kit from TokenCorridor@e578e03b"
+          git push origin HEAD:main
