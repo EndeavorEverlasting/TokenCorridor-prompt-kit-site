@@ -8,3 +8,5 @@
 This repository holds only the generated static site for free GitHub Pages hosting.
 Publication does **not** equal M4 authority cutover.
 Triage compatibility: https://endeavoreverlasting.github.io/web-excel-repair-triage/
+
+Source revision: `e578e03b47b3394981e54f04d2ad7cb098adfad0`
