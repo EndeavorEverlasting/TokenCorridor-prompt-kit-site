@@ -66,6 +66,13 @@ def main() -> None:
         selector.focus()
         assert selector.evaluate("(el) => document.activeElement === el")
         widths = page.evaluate("({scroll:document.documentElement.scrollWidth, inner:window.innerWidth})")
+        if widths["scroll"] > widths["inner"] + 2:
+            offenders = page.evaluate("""() => [...document.querySelectorAll('body *')].map(e => {
+                const r=e.getBoundingClientRect();
+                return {tag:e.tagName.toLowerCase(), id:e.id||'', cls:String(e.className||'').slice(0,70),
+                        left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width)}
+            }).filter(x=>x.right>innerWidth+2 || x.left<-2).sort((a,b)=>b.right-a.right).slice(0,12)""")
+            print("MOBILE_OVERFLOW_ELEMENTS", offenders, flush=True)
         assert widths["scroll"] <= widths["inner"] + 2, widths
         assert not errors, "browser console exceptions: "+repr(errors[:3])
         print("PASS LIVE_BROWSER_MOONWAKE_R3_THEMES_PERSIST_PROMPT_LIBRARY_COPY_KEYBOARD_MOBILE", flush=True)
