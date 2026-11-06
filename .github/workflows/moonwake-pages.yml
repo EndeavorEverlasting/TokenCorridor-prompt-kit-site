@@ -1,0 +1,107 @@
+name: Moonwake public Pages release
+
+on:
+  pull_request:
+    paths:
+      - "moonwake/**"
+      - "prompt-library/**"
+      - ".github/workflows/moonwake-pages.yml"
+  push:
+    branches: [main]
+    paths:
+      - "moonwake/**"
+      - "prompt-library/**"
+      - ".github/workflows/moonwake-pages.yml"
+      - "index.html"
+      - "resources.v1.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: moonwake-public-pages
+  cancel-in-progress: false
+
+jobs:
+  verify-publication:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Public-only assets, R3 provenance, and library route
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          root = Path(".")
+          manifest = json.loads((root/"moonwake/release-manifest.v1.json").read_text())
+          assert manifest["work_id"] == "PS-0208"
+          assert manifest["boundaries"]["private_repo_remains_private"] is True
+          for path, sha in manifest["assets"].items():
+              assert (root/path).is_file(), path
+              actual = subprocess.check_output(["git","hash-object",path],text=True).strip()
+              assert actual == sha, (path, actual, sha)
+          html = (root/"moonwake/index.html").read_text(encoding="utf-8")
+          for needle in ('<h1 id="hero-title">Moonwake</h1>', 'prompt-library/index.html',
+                         'value="night"', 'value="light"', 'value="system"',
+                         'src="assets/moonwake-mark-512-impeccable.png"',
+                         'src="assets/moonwake-mark.svg"'):
+              assert needle in html, "missing public UI contract: "+needle
+          for forbidden in ("127.0.0.1", "localhost", "file://", "ya29.", "ghp_", "GOCSPX-", "sk-proj-"):
+              assert forbidden not in html, "unsafe public page reference: "+forbidden
+          assert (root/"prompt-library/index.html").is_file()
+          assert (root/"prompt-library/resources.v1.json").is_file()
+          assert (root/"moonwake/assets/fonts/Literata-OFL.txt").is_file()
+          assert (root/"moonwake/assets/fonts/Syne-OFL.txt").is_file()
+          assert (root/"index.html").is_file(), "preserve existing legacy root Prompt Library"
+          print("PASS: PS-0208 R3/source parity, static source isolation, public catalog routing")
+          PY
+      - name: Repository tree hygiene
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check HEAD~1..HEAD
+
+  deploy-pages:
+    if: github.event_name != 'pull_request'
+    needs: verify-publication
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stage public-only website (Moonwake root + catalog compatibility)
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="$RUNNER_TEMP/moonwake-pages"
+          mkdir -p "$target"/{moonwake,prompt-library,assets}
+          cp moonwake/index.html "$target/index.html"
+          cp -R moonwake/. "$target/moonwake/"
+          cp -R moonwake/assets/. "$target/assets/"
+          cp prompt-library/index.html "$target/prompt-library/index.html"
+          cp prompt-library/resources.v1.json "$target/prompt-library/resources.v1.json"
+          cp resources.v1.json "$target/resources.v1.json"
+          touch "$target/.nojekyll"
+          test -s "$target/index.html"
+          test -s "$target/prompt-library/index.html"
+          test -s "$target/assets/moonwake-mark-512-impeccable.png"
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload sanitized static artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/moonwake-pages
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

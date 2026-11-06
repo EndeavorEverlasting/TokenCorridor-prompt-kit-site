@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Moonwake — browse and copy the public Prompt Library inside the Moonwake interface. Private work sessions are never exposed.">
+<title>Moonwake — Prompt Library & AI Work</title>
+<link rel="icon" type="image/svg+xml" href="assets/moonwake-mark.svg">
+<style>
+@font-face {
+  font-family: "Syne";
+  src: url("assets/fonts/Syne-Variable.ttf") format("truetype");
+  font-weight: 500 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Literata";
+  src: url("assets/fonts/Literata-Variable.ttf") format("truetype");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --bg: #09131c;
+  --surface: #11202c;
+  --line: #344856;
+  --ink: #edf3f5;
+  --soft: #bdcdd4;
+  --muted: #9caebb;
+  --accent: #b7dbe4;
+  --glow: rgba(102, 183, 202, 0.18);
+  --scrim: linear-gradient(90deg, rgba(9, 19, 28, 0.92) 0%, rgba(9, 19, 28, 0.72) 42%, rgba(9, 19, 28, 0.18) 68%, transparent 100%);
+  --font-display: "Syne", "Avenir Next", sans-serif;
+  --font-body: "Literata", "Iowan Old Style", Georgia, serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+html[data-theme="light"] {
+  --bg: #edf2f1;
+  --surface: #f8faf9;
+  --line: #b5c9cc;
+  --ink: #18313c;
+  --soft: #334f59;
+  --muted: #4c6470;
+  --accent: #3b7688;
+  --glow: rgba(88, 155, 166, 0.14);
+  --scrim: linear-gradient(90deg, rgba(237, 242, 241, 0.94) 0%, rgba(237, 242, 241, 0.78) 44%, rgba(237, 242, 241, 0.2) 70%, transparent 100%);
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+}
+a { color: inherit; }
+button, select { font: inherit; }
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -6rem;
+  z-index: 30;
+  background: var(--surface);
+  padding: 0.75rem 1rem;
+}
+.skip:focus { top: 1rem; }
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+
+.chrome {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.15rem clamp(1.1rem, 3vw, 2.4rem);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+}
+.brand-mark { width: 2rem; height: 2rem; flex: none; }
+.brand-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.04em;
+}
+.chrome-tools {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.chrome-tools a {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: var(--soft);
+}
+.chrome-tools a:hover { color: var(--ink); }
+.appearance {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.appearance label {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--soft);
+}
+.appearance select {
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.55rem 1.7rem 0.55rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-items: end;
+  overflow: hidden;
+  isolation: isolate;
+}
+.scene::after { display: none; } /* Do not overlay/alter original photographic craft. */
+.heritage-art, .hero-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  filter: none;
+  mix-blend-mode: normal;
+  opacity: 1;
+  transform: scale(1.04);
+  animation: wake-drift 28s ease-in-out infinite alternate;
+  z-index: 0;
+}
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  z-index: 1;
+  pointer-events: none;
+}
+.hero-copy {
+  position: relative;
+  z-index: 2;
+  width: min(40rem, calc(100% - 2.4rem));
+  padding: 7.5rem 0 4.5rem clamp(1.1rem, 3vw, 2.4rem);
+}
+.hero-copy h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(4.2rem, 12vw, 8.5rem);
+  letter-spacing: -0.075em;
+  line-height: 0.92;
+  margin: 0 0 1.15rem;
+  max-width: 11ch;
+}
+.hero-copy p {
+  margin: 0 0 1.7rem;
+  max-width: 34ch;
+  font-size: clamp(1.05rem, 1.7vw, 1.28rem);
+  line-height: 1.45;
+  font-weight: 400;
+  color: var(--soft);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.7rem 1.15rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 650;
+  border: 1px solid transparent;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+.cta:hover { transform: translateY(-2px); }
+.cta.primary {
+  background: var(--accent);
+  color: var(--bg);
+}
+.cta.ghost {
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  color: var(--ink);
+  background: color-mix(in srgb, var(--surface) 35%, transparent);
+  backdrop-filter: blur(8px);
+}
+.art-credit {
+  position: absolute;
+  right: clamp(1.1rem, 3vw, 2.4rem);
+  bottom: 1.35rem;
+  z-index: 2;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, #edf3f5 78%, transparent);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
+}
+
+.shell {
+  width: min(1180px, calc(100% - 2.4rem));
+  margin: 0 auto;
+}
+.panel {
+  padding: 4.5rem 0 1rem;
+}
+.panel h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 4.5vw, 3.1rem);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  margin: 0 0 0.8rem;
+  max-width: 18ch;
+}
+.lede {
+  margin: 0 0 2rem;
+  max-width: 48ch;
+  color: var(--muted);
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+.preview {
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: var(--surface);
+  overflow: hidden;
+}
+.preview-top {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.preview-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.prompt-embed-note {
+  padding: 0.9rem 1.4rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--soft);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.prompt-embed {
+  display: block;
+  width: 100%;
+  min-height: 28rem;
+  height: min(74vh, 48rem);
+  border: 0;
+  background: var(--bg);
+}
+.system-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.2rem;
+  align-items: center;
+  padding: 1rem 1.4rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin-top: 3.5rem;
+}
+.flow article {
+  padding: 1.6rem 1.35rem 1.7rem;
+  min-height: 11rem;
+}
+.flow article + article { border-left: 1px solid var(--line); }
+.flow h3 {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.55rem;
+}
+.flow p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.note {
+  margin: 1rem 0 0;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--soft);
+}
+.identity {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 2rem;
+  align-items: end;
+  padding: 3.5rem 0 4.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.mark-stage {
+  margin: 0;
+  padding: 1.5rem;
+  background: #09131c;
+  border: 1px solid #344856;
+  border-radius: 0.35rem;
+  display: grid;
+  place-items: center;
+  min-height: 18rem;
+}
+.mark-stage img {
+  position: static;
+  width: min(100%, 18rem);
+  height: auto;
+  object-fit: contain;
+  transform: none;
+  animation: none;
+  filter: none;
+  mix-blend-mode: normal;
+}
+.mark-stage figcaption {
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #c4d1da;
+  text-align: center;
+}
+.swatches {
+  display: flex;
+  gap: 0.55rem;
+  margin: 1.1rem 0 0.4rem;
+}
+.swatches i {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  display: block;
+}
+.gate {
+  padding: 3.2rem 0 4rem;
+}
+.gate p {
+  max-width: 52ch;
+  color: var(--soft);
+  line-height: 1.6;
+  font-size: 1.02rem;
+}
+footer {
+  padding: 1.2rem clamp(1.1rem, 3vw, 2.4rem) 2.4rem;
+  border-top: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  justify-content: space-between;
+}
+footer a { color: var(--accent); }
+
+@keyframes wake-drift {
+  from { transform: scale(1.04) translate3d(0, 0, 0); }
+  to { transform: scale(1.08) translate3d(-1.2%, 0.8%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero-art { animation: none; transform: none; }
+  .cta { transition: none; }
+  .cta:hover { transform: none; }
+}
+@media (max-width: 900px) {
+  .flow { grid-template-columns: 1fr; }
+  .flow article + article { border-left: 0; border-top: 1px solid var(--line); }
+  .identity { grid-template-columns: 1fr; }
+  .hero-copy { padding-bottom: 5.5rem; }
+  .prompt-embed { height: 70vh; min-height: 24rem; }
+}
+@media (max-width: 640px) {
+  .chrome {
+    position: relative;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .chrome-tools a:not(.keep) { display: none; }
+  .hero { min-height: calc(100svh - 4.2rem); }
+  .hero-scrim {
+    background: linear-gradient(180deg, rgba(9, 19, 28, 0.2) 0%, rgba(9, 19, 28, 0.55) 38%, rgba(9, 19, 28, 0.9) 100%);
+  }
+  html[data-theme="light"] .hero-scrim {
+    background: linear-gradient(180deg, rgba(237, 242, 241, 0.15) 0%, rgba(237, 242, 241, 0.55) 40%, rgba(237, 242, 241, 0.92) 100%);
+  }
+  .art-credit { left: clamp(1.1rem, 3vw, 2.4rem); right: auto; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#prompts">Skip to Prompt Library</a>
+
+<header class="chrome">
+  <a class="brand" href="#main" aria-label="Moonwake, back to top">
+    <!-- Bit-identical preview copy of operator-accepted R3 vector from PR #227 -->
+    <img class="brand-mark" src="assets/moonwake-mark.svg" width="32" height="32" alt="">
+    <span class="brand-name">Moonwake</span>
+  </a>
+  <div class="chrome-tools">
+    <a class="keep" data-prompt-library href="../prompt-kit/index.html">Prompt Library</a>
+    <a href="#work">Work</a>
+    <a href="#identity">Identity</a>
+    <a href="#work" aria-label="Activity Observatory preview, no live feed">Activity Observatory</a>
+    <div class="appearance">
+      <label for="appearance">Appearance</label>
+      <select id="appearance" name="appearance" aria-describedby="appearance-status">
+        <option value="system">Use device setting</option>
+        <option value="night">Night Observatory</option>
+        <option value="light">Tidal Light</option>
+      </select>
+      <span id="appearance-status" class="sr-only" aria-live="polite"></span>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <img
+      class="heritage-art hero-art"
+      src="assets/moonwake-mark-512-impeccable.png"
+      width="512"
+      height="512"
+      alt="Original operator-approved Moonwake R3 photographic art: silver crescent over successive horizontal liquid glints; shown unchanged in both themes."
+    >
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="hero-copy">
+      <h1 id="hero-title">Moonwake</h1>
+      <p>Find the right prompt, copy it, and keep work moving.</p>
+      <div class="actions">
+        <a class="cta primary" data-prompt-library href="../prompt-kit/index.html">Open Prompt Library</a>
+        <a class="cta ghost" href="#prompts">Browse prompts here</a>
+      </div>
+    </div>
+    <p class="art-credit">R3 original art · preserved in both themes</p>
+  </section>
+
+  <div class="shell">
+    <section class="panel" id="prompts" aria-labelledby="prompts-title">
+      <h2 id="prompts-title">Your prompts come first.</h2>
+      <p class="lede">This embeds the existing generated Prompt Library — search, open a P-number, and copy. No second registry and no duplicated prompt text.</p>
+      <div class="preview">
+        <div class="preview-top">
+          <span class="preview-title">Prompt Library</span>
+          <span class="pill">Existing functional catalog</span>
+        </div>
+        <div class="prompt-embed-note">Browse and copy inside Moonwake. For the full-height catalog, open Prompt Library directly.</div>
+        <iframe
+          id="promptLibraryFrame"
+          class="prompt-embed"
+          title="Prompt Library — searchable prompts with copy controls"
+          src="about:blank"
+          loading="lazy"
+          allow="clipboard-write"
+          referrerpolicy="no-referrer"
+        ></iframe>
+        <div class="system-note">
+          <a class="cta primary" data-prompt-library href="../prompt-kit/index.html">Open full Prompt Library to copy prompts</a>
+          <span>Search · Open prompt · Copy · Paste</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="work" aria-labelledby="work-title">
+      <h2 id="work-title">Clarity before activity.</h2>
+      <p class="lede">Presentation hierarchy for the remaining destinations — not a connected dashboard. No live feed. No example claims an agent is running.</p>
+      <div class="flow">
+        <article>
+          <h3>What's moving</h3>
+          <p>Show sessions and evidence-backed progress only when a verified feed is connected.</p>
+          <p class="note">Preview: no session data</p>
+        </article>
+        <article>
+          <h3>How it connects</h3>
+          <p>Trace prompt authority, adapters, providers, hosts, plans, and receipts through verified relationships.</p>
+          <p class="note">Preview: structural concept</p>
+        </article>
+        <article>
+          <h3>What comes next</h3>
+          <p>Keep clearance, migration, and outstanding gates explicit instead of inventing live motion.</p>
+          <p class="note">Moonwake selected · cutover pending</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="identity" id="identity" aria-labelledby="identity-title">
+      <div>
+        <h2 id="identity-title">A name worth seeing.</h2>
+        <p class="lede">The wordmark leads. The approved R3 mark stays subordinate and untouched — ownership remains PR #227.</p>
+        <div class="swatches" aria-label="Moonwake palette">
+          <i style="background:#09131c" title="Ink"></i>
+          <i style="background:#11202c" title="Surface"></i>
+          <i style="background:#344856" title="Line"></i>
+          <i style="background:#b7dbe4" title="Accent"></i>
+          <i style="background:#edf3f5" title="Silver"></i>
+        </div>
+        <p class="note">Night Observatory · Tidal Light · device setting</p>
+      </div>
+      <figure class="mark-stage">
+        <img class="heritage-art" src="assets/moonwake-mark-512-impeccable.png" width="512" height="512" alt="Moonwake R3 photographic craft on a neutral night stage.">
+        <figcaption>Exact R3 craft · no recolor · no filter</figcaption>
+      </figure>
+    </section>
+
+    <section class="gate" id="review" aria-labelledby="review-title">
+      <h2 id="review-title">The first release is here.</h2>
+      <p>Moonwake's public first release keeps the existing Prompt Library authoritative for search, P-number navigation, and copying. Night Observatory, Tidal Light, and device preference preserve the approved R3 artwork. The private repository, native execution receipts, and live local activity stay outside this public site; additional cockpit destinations will be connected only when evidence supports them.</p>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <span>Moonwake · public first release · existing Prompt Library · no public session feed</span>
+  <span><a href="#work">Activity Observatory preview</a> · live host activity stays private</span>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var selector = document.getElementById("appearance");
+  var status = document.getElementById("appearance-status");
+  var key = "moonwake:appearance:v1";
+  var media = (typeof window.matchMedia === "function") ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  var valid = { system: true, night: true, light: true };
+  function readPreference() {
+    try { return window.localStorage.getItem(key); }
+    catch (ignored) { return null; }
+  }
+  function writePreference(value) {
+    try {
+      if (value === "system") window.localStorage.removeItem(key);
+      else window.localStorage.setItem(key, value);
+    } catch (ignored) { /* storage may be denied */ }
+  }
+  var stored = readPreference();
+  var preference = valid[stored] ? stored : "system";
+  function applyPreference() {
+    var resolved = preference === "system" ? (media && !media.matches ? "light" : "night") : preference;
+    document.documentElement.setAttribute("data-theme", resolved);
+    document.documentElement.setAttribute("data-theme-preference", preference);
+    selector.value = preference;
+    status.textContent = (preference === "system" ? "Device preference" : preference === "night" ? "Night Observatory" : "Tidal Light") + " active, " + resolved + " colors.";
+  }
+  selector.addEventListener("change", function () {
+    var selected = selector.value;
+    if (!valid[selected]) return;
+    preference = selected;
+    writePreference(preference);
+    applyPreference();
+  });
+  if (media) {
+    if (typeof media.addEventListener === "function") media.addEventListener("change", function () { if (preference === "system") applyPreference(); });
+    else if (typeof media.addListener === "function") media.addListener(function () { if (preference === "system") applyPreference(); });
+  }
+  applyPreference();
+
+  // Preserve the private preview route; serve the public catalog from the sanitized public mirror.
+  var localRepoPreview = /\/web\/moonwake\/(?:index\.html)?$/.test(window.location.pathname);
+  var publicMoonwakePage = /\/moonwake\/(?:index\.html)?$/.test(window.location.pathname);
+  var target = localRepoPreview ? "../prompt-kit/index.html" : (publicMoonwakePage ? "../prompt-library/index.html" : "prompt-library/index.html");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-prompt-library]"), function (link) {
+    link.href = target;
+  });
+  var promptFrame = document.getElementById("promptLibraryFrame");
+  if (promptFrame) promptFrame.src = target;
+}());
+</script>
+</body>
+</html>
