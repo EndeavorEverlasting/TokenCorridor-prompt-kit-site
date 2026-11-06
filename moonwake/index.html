@@ -487,7 +487,7 @@ footer a { color: var(--accent); }
     <a class="keep" data-prompt-library href="../prompt-kit/index.html">Prompt Library</a>
     <a href="#work">Work</a>
     <a href="#identity">Identity</a>
-    <a href="#work" aria-label="Activity Observatory preview, no live feed">Activity Observatory</a>
+    <a href="#work" data-observatory-link>Activity Observatory</a>
     <div class="appearance">
       <label for="appearance">Appearance</label>
       <select id="appearance" name="appearance" aria-describedby="appearance-status">
@@ -548,23 +548,20 @@ footer a { color: var(--accent); }
     </section>
 
     <section class="panel" id="work" aria-labelledby="work-title">
-      <h2 id="work-title">Clarity before activity.</h2>
-      <p class="lede">Presentation hierarchy for the remaining destinations — not a connected dashboard. No live feed. No example claims an agent is running.</p>
+      <h2 id="work-title">Activity Observatory</h2>
+      <p class="lede">Open Moonwake on your workstation to follow chats, scheduled jobs, and execution evidence in one place.</p>
       <div class="flow">
         <article>
-          <h3>What's moving</h3>
-          <p>Show sessions and evidence-backed progress only when a verified feed is connected.</p>
-          <p class="note">Preview: no session data</p>
+          <h3>Live chats</h3>
+          <p>See sessions reported by Entire across selected checkouts. Open an OpenCode conversation to follow its recent messages.</p>
         </article>
         <article>
-          <h3>How it connects</h3>
-          <p>Trace prompt authority, adapters, providers, hosts, plans, and receipts through verified relationships.</p>
-          <p class="note">Preview: structural concept</p>
+          <h3>Night Shift</h3>
+          <p>Inspect Windows Task Scheduler jobs and recent firings. See which scheduler and cron feeds are fresh or unavailable.</p>
         </article>
         <article>
-          <h3>What comes next</h3>
-          <p>Keep clearance, migration, and outstanding gates explicit instead of inventing live motion.</p>
-          <p class="note">Moonwake selected · cutover pending</p>
+          <h3>Execution evidence</h3>
+          <p>Read an Entire work receipt to see agent attempts, acceptance results, and observed checkpoints.</p>
         </article>
       </div>
     </section>
@@ -589,15 +586,15 @@ footer a { color: var(--accent); }
     </section>
 
     <section class="gate" id="review" aria-labelledby="review-title">
-      <h2 id="review-title">The first release is here.</h2>
-      <p>Moonwake's public first release keeps the existing Prompt Library authoritative for search, P-number navigation, and copying. Night Observatory, Tidal Light, and device preference preserve the approved R3 artwork. The private repository, native execution receipts, and live local activity stay outside this public site; additional cockpit destinations will be connected only when evidence supports them.</p>
+      <h2 id="review-title">Prompts here. Work on your machine.</h2>
+      <p>The public Prompt Library is ready to browse and copy. To see your chats or scheduler activity, start the private Moonwake Observatory from your workstation checkout.</p>
     </section>
   </div>
 </main>
 
 <footer>
-  <span>Moonwake · public first release · existing Prompt Library · no public session feed</span>
-  <span><a href="#work">Activity Observatory preview</a> · live host activity stays private</span>
+  <span>Moonwake · Public Prompt Library</span>
+  <span><a href="#work" data-observatory-link>Activity Observatory</a> · Private workspace</span>
 </footer>
 
 <script>
