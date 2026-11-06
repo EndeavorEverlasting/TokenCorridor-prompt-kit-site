@@ -2,9 +2,9 @@
 
 The **Moonwake** first release is published as static site assets in this public mirror. The underlying TokenCorridor / Moonwake engineering repository remains **private**.
 
-**Public interface:** `/moonwake/` (the Pages Actions deploy also serves Moonwake at `/`).
+**Public interface:** `/` and `/moonwake/` (both serve the same Moonwake entrypoint).
 
-**Working Prompt Library:** `/prompt-library/` (the existing generated `index.html` stays intact at the repository root for compatibility).
+**Working Prompt Library:** `/prompt-library/` (the full original generated catalog is preserved byte-for-byte; `/index.html` is now Moonwake).
 
 This mirror contains *only public static website assets*, never private agent work evidence, secrets, configuration or the engineering repository. Moonwake's R3 artwork and appearance modes use preserved original assets. The source's internal naming, namespace and repository URL are separately migrated.
 
@@ -12,7 +12,7 @@ This mirror contains *only public static website assets*, never private agent wo
 
 GitHub mirror repository ID: `1389358652`. Canonical private source repository ID: `1382415392`.
 
-The canonical website/prompt catalog remains the private source. The generated public Prompt Library is not hand-edited; releases update static website assets in this mirror. Public site release receipts must distinguish GitHub commit, CI, Pages deployment and externally observed HTTP/browser behavior.
+The existing Pages branch publisher deploys public `main`; the Moonwake Actions workflow verifies and observes HTTP but does not deploy a competing artifact. The canonical website/prompt catalog remains the private source. The generated public Prompt Library is not hand-edited; releases update static website assets in this mirror. Public site release receipts must distinguish GitHub commit, CI, Pages deployment and externally observed HTTP/browser behavior.
 
 ---
 

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Moonwake">
+  <defs>
+    <radialGradient id="mw-moon" cx="62%" cy="38%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="45%" stop-color="#e8eef4"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </radialGradient>
+    <!-- Reliable crescent: full disk clipped by offset disk (matches R3 photo silhouette) -->
+    <mask id="mw-crescent-mask">
+      <rect width="32" height="32" fill="black"/>
+      <circle cx="16" cy="11.2" r="7.4" fill="white"/>
+      <circle cx="19.6" cy="10.2" r="5.9" fill="black"/>
+    </mask>
+  </defs>
+  <!--
+    Vector translation of R3 photographic comps for favicon/header.
+    Craft authority remains the photo (moonwake-mark-512-impeccable.png).
+    Crescent MUST paint; wakes = thin iterative horizontal glints (not wake-only).
+  -->
+  <circle cx="16" cy="11.2" r="7.4" fill="url(#mw-moon)" mask="url(#mw-crescent-mask)"/>
+  <!-- Water glints — thin, centered under crescent; gaps of void between -->
+  <g fill="none" stroke-linecap="round">
+    <path stroke="#f8fafc" stroke-width="0.95" stroke-opacity=".95" d="M9.2 21.4 H22.8"/>
+    <path stroke="#f1f5f9" stroke-width="0.85" stroke-opacity=".82" d="M8.4 23.0 H23.6"/>
+    <path stroke="#e2e8f0" stroke-width="0.8"  stroke-opacity=".7"  d="M7.6 24.6 H24.4"/>
+    <path stroke="#cbd5e1" stroke-width="0.7"  stroke-opacity=".55" d="M8.8 26.1 H23.2"/>
+    <path stroke="#94a3b8" stroke-width="0.6"  stroke-opacity=".4"  d="M10.4 27.5 H21.6"/>
+  </g>
+</svg>

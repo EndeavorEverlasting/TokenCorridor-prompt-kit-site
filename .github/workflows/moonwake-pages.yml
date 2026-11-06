@@ -5,22 +5,27 @@ on:
     paths:
       - "moonwake/**"
       - "prompt-library/**"
+      - "assets/**"
+      - "index.html"
       - ".github/workflows/moonwake-pages.yml"
+      - ".github/scripts/verify_moonwake_live.py"
+      - "AGENTS.md"
   push:
     branches: [main]
     paths:
       - "moonwake/**"
       - "prompt-library/**"
-      - ".github/workflows/moonwake-pages.yml"
+      - "assets/**"
       - "index.html"
-      - "resources.v1.json"
+      - ".github/workflows/moonwake-pages.yml"
+      - ".github/scripts/verify_moonwake_live.py"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: moonwake-public-pages
+  group: moonwake-public-release-proof
   cancel-in-progress: false
 
 jobs:
@@ -31,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Public-only assets, R3 provenance, and library route
+      - name: Moonwake root, original R3 art, private-data boundary and catalog parity
         shell: bash
         run: |
           set -euo pipefail
@@ -43,67 +48,41 @@ jobs:
           manifest = json.loads((root/"moonwake/release-manifest.v1.json").read_text())
           assert manifest["work_id"] == "PS-0208"
           assert manifest["boundaries"]["private_repo_remains_private"] is True
+          assert manifest["publication"]["route"] == "/"
           for path, sha in manifest["assets"].items():
               assert (root/path).is_file(), path
               actual = subprocess.check_output(["git","hash-object",path],text=True).strip()
               assert actual == sha, (path, actual, sha)
-          html = (root/"moonwake/index.html").read_text(encoding="utf-8")
-          for needle in ('<h1 id="hero-title">Moonwake</h1>', 'prompt-library/index.html',
-                         'value="night"', 'value="light"', 'value="system"',
-                         'src="assets/moonwake-mark-512-impeccable.png"',
-                         'src="assets/moonwake-mark.svg"'):
-              assert needle in html, "missing public UI contract: "+needle
-          for forbidden in ("127.0.0.1", "localhost", "file://", "ya29.", "ghp_", "GOCSPX-", "sk-proj-"):
-              assert forbidden not in html, "unsafe public page reference: "+forbidden
+              if path.startswith("moonwake/assets/"):
+                  mirror = path.removeprefix("moonwake/")
+                  if (root/mirror).exists():
+                      assert subprocess.check_output(["git","hash-object",mirror],text=True).strip() == sha
+          home = (root/"index.html").read_bytes()
+          moonwake = (root/"moonwake/index.html").read_bytes()
+          assert home == moonwake, "Moonwake default entrypoint drift"
+          assert b'<h1 id="hero-title">Moonwake</h1>' in home
+          for forbidden in (b"127.0.0.1",b"localhost",b"file://",b"ya29.",b"ghp_",b"GOCSPX-",b"sk-proj-"):
+              assert forbidden not in home, "unsafe public reference"
+          for theme in (b'value="night"',b'value="light"',b'value="system"'):
+              assert theme in home
           assert (root/"prompt-library/index.html").is_file()
+          assert subprocess.check_output(["git","hash-object","prompt-library/index.html"],text=True).strip() == "650c5ba2830e45fde8cbf2348088017e4d496d2b"
           assert (root/"prompt-library/resources.v1.json").is_file()
-          assert (root/"moonwake/assets/fonts/Literata-OFL.txt").is_file()
-          assert (root/"moonwake/assets/fonts/Syne-OFL.txt").is_file()
-          assert (root/"index.html").is_file(), "preserve existing legacy root Prompt Library"
-          print("PASS: PS-0208 R3/source parity, static source isolation, public catalog routing")
+          for name in ("Literata","Syne"):
+              assert (root/f"assets/fonts/{name}-Variable.ttf").is_file()
+              assert (root/f"assets/fonts/{name}-OFL.txt").is_file()
+          print("PASS PS-0208 ROOT_MOONWAKE R3_SHA PRIVATE_BOUNDARY CATALOG_ORIGINAL")
           PY
-      - name: Repository tree hygiene
-        shell: bash
-        run: |
-          set -euo pipefail
-          git diff --check HEAD~1..HEAD
+      - name: Exact patch hygiene
+        run: git diff --check HEAD~1..HEAD
 
-  deploy-pages:
+  observe-public-pages:
     if: github.event_name != 'pull_request'
     needs: verify-publication
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Stage public-only website (Moonwake root + catalog compatibility)
+      - name: Observe HTTP deployed by existing GitHub Pages branch publisher
         shell: bash
-        run: |
-          set -euo pipefail
-          target="$RUNNER_TEMP/moonwake-pages"
-          mkdir -p "$target"/{moonwake,prompt-library,assets}
-          cp moonwake/index.html "$target/index.html"
-          cp -R moonwake/. "$target/moonwake/"
-          cp -R moonwake/assets/. "$target/assets/"
-          cp prompt-library/index.html "$target/prompt-library/index.html"
-          cp prompt-library/resources.v1.json "$target/prompt-library/resources.v1.json"
-          cp resources.v1.json "$target/resources.v1.json"
-          touch "$target/.nojekyll"
-          test -s "$target/index.html"
-          test -s "$target/prompt-library/index.html"
-          test -s "$target/assets/moonwake-mark-512-impeccable.png"
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Upload sanitized static artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: ${{ runner.temp }}/moonwake-pages
-      - name: Deploy GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        run: python3 .github/scripts/verify_moonwake_live.py --revision "${{ github.sha }}"
