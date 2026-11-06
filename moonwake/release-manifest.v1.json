@@ -12,11 +12,14 @@
   "publication": {
     "repository_id": 1389358652,
     "repository": "EndeavorEverlasting/TokenCorridor-prompt-kit-site",
-    "branch": "release/moonwake-ps0208-20261106",
-    "route": "/moonwake/",
+    "branch": "release/moonwake-root-parity-ps0208-20261106",
+    "route": "/",
     "root_pages_actions": "/",
     "visibility": "PUBLIC_STATIC_ONLY",
-    "state": "RELEASE_CANDIDATE_NOT_LIVE_PROVEN"
+    "state": "SOURCE_READY_FOR_ROOT_CUTOVER_DEPLOY_READBACK_REQUIRED",
+    "secondary_route": "/moonwake/",
+    "catalog_route": "/prompt-library/",
+    "pages_url": "https://endeavoreverlasting.github.io/TokenCorridor-prompt-kit-site/"
   },
   "assets": {
     "moonwake/assets/moonwake-mark.svg": "5e2e6caa655c1e047d4b87642d18024ad2f9f263",
@@ -35,15 +38,16 @@
   "verification": {
     "required": [
       "git-blob parity",
+      "root Moonwake byte parity",
+      "generated Prompt Library SHA retention",
       "GitHub CI",
-      "exact public mirror commit",
-      "Pages deployment",
-      "HTTP 200 + expected assets",
-      "browser copy + light/dark mode"
+      "single Pages deployment owner",
+      "public HTTP root/library/art readback",
+      "browser light/dark and copy acceptance"
     ],
     "not_yet_proven": [
-      "Pages deployment",
-      "external HTTP/browser"
+      "exact root public HTTP readback",
+      "browser light/dark and copy"
     ]
   }
 }
