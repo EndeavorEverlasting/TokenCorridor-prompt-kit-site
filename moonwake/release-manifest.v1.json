@@ -1,0 +1,49 @@
+{
+  "schema": "moonwake.public-release/v1",
+  "work_id": "PS-0208",
+  "product_name": "Moonwake",
+  "source": {
+    "repository_id": 1382415392,
+    "repository": "EndeavorEverlasting/TokenCorridor",
+    "source_pr": 283,
+    "source_branch": "design/moonwake-first-release-entry-20261102",
+    "site_blob_sha": "dff0d8ac4ee91159fe9949d4223e10e91af502b6"
+  },
+  "publication": {
+    "repository_id": 1389358652,
+    "repository": "EndeavorEverlasting/TokenCorridor-prompt-kit-site",
+    "branch": "release/moonwake-ps0208-20261106",
+    "route": "/moonwake/",
+    "root_pages_actions": "/",
+    "visibility": "PUBLIC_STATIC_ONLY",
+    "state": "RELEASE_CANDIDATE_NOT_LIVE_PROVEN"
+  },
+  "assets": {
+    "moonwake/assets/moonwake-mark.svg": "5e2e6caa655c1e047d4b87642d18024ad2f9f263",
+    "moonwake/assets/moonwake-mark-512-impeccable.png": "10e1e16cb794655a410b729e9fbc2f76baca8a44",
+    "moonwake/assets/fonts/Syne-Variable.ttf": "af1814d0f4d9d4302b57c9b0f5aab4c85847479a",
+    "moonwake/assets/fonts/Literata-Variable.ttf": "0a81b4984a4a4eb101e0ddc28babc85bb137efef"
+  },
+  "boundaries": {
+    "private_repo_remains_private": true,
+    "static_only": true,
+    "excludes_credentials": true,
+    "excludes_private_receipts": true,
+    "host_observatory_unpublished": true,
+    "legal_account_progress_not_deployment_gate": true
+  },
+  "verification": {
+    "required": [
+      "git-blob parity",
+      "GitHub CI",
+      "exact public mirror commit",
+      "Pages deployment",
+      "HTTP 200 + expected assets",
+      "browser copy + light/dark mode"
+    ],
+    "not_yet_proven": [
+      "Pages deployment",
+      "external HTTP/browser"
+    ]
+  }
+}
