@@ -77,7 +77,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Stage public-only website (Moonwake root + catalog compatibility)
