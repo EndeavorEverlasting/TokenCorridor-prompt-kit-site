@@ -21,7 +21,9 @@ def main() -> None:
         )
         page = context.new_page()
         errors = []
-        page.on("pageerror", lambda exc: errors.append(str(exc)))
+        def capture_error(exc):
+            errors.append({"message": str(exc), "stack": str(getattr(exc, "stack", ""))[:2500]})
+        page.on("pageerror", capture_error)
 
         page.goto(BASE, wait_until="domcontentloaded", timeout=50000)
         expect(page.get_by_role("heading", name="Moonwake", exact=True)).to_be_visible()
