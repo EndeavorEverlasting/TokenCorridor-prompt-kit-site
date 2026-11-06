@@ -442,7 +442,21 @@ footer a { color: var(--accent); }
   .prompt-embed { height: 70vh; min-height: 24rem; }
 }
 @media (max-width: 640px) {
+  /* Browser-proven 390px overflow repair: the unbroken display word and
+     header controls must not set the grid's min-content page width. */
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .hero-copy { min-width: 0; width: calc(100% - 1.1rem); }
+  .hero-copy h1 { font-size: clamp(2.6rem, 11vw, 4.2rem); }
+  .chrome-tools {
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.65rem 0.9rem;
+  }
+  .appearance { min-width: 0; max-width: 100%; }
   .chrome {
+    flex-wrap: wrap;
     position: relative;
     background: color-mix(in srgb, var(--bg) 88%, transparent);
     backdrop-filter: blur(12px);
